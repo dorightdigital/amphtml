@@ -301,6 +301,28 @@ function getInstance(opt_validatorJs) {
   });
 }
 exports.getInstance = getInstance;
+exports.validate = function (url) {
+  console.warn('DEPRICATED: This interface has been replaced, in later versions it will be removed.');
+  return readFromUrl(url)
+     .then(function (data) {
+        return getInstance('https://cdn.ampproject.org/v0/validator.js')
+          .then(function (validator) {
+            var validationResult = validator.validateString(data);
+            var errors = [];
+            for (var i in validationResult.errors) {
+              var err = validationResult.errors[i];
+              if (validationResult.errors.hasOwnProperty(i) && err.severity === 'ERROR') {
+                errors.push({
+                  line: err.line,
+                  char: err.col,
+                  reason: err.message
+                });
+              }
+            }
+            return {ampVersion: {}, errors: errors, success: errors.length === 0};
+          });
+     });
+};
 
 /**
  * Maps from file extension to a mime-type.
